@@ -1,0 +1,112 @@
+% Jacob Sheets
+% L2
+
+% ------------------------------------ %
+% 1. Genealogy
+% ------------------------------------ %
+parent(X,Y).
+grandparent(A, C) :- parent(A, X), parent(X, C).
+sibling(A, B)     :- parent(X, A), parent(X, B), not(A = B).
+cousin(A, B)      :- parent(X, A), parent(Y, B), sibling(X, Y), not(A = B).
+
+% ------------------------------------ %
+% 2. DirectlyIN
+% ------------------------------------ %
+directlyIn(katarina, olga).
+directlyIn(olga,     natasha).
+directlyIn(natasha,  irina).
+
+% base case
+in(Out, In) :- directlyIn(Out, In).
+
+in(Out, In) :- directlyIn(Out, InNext), in(InNext, In).
+
+% ------------------------------------ %
+% 3. Travel by Train
+% ------------------------------------ %
+directTrain(baltimore,    washington).
+directTrain(wilmington,   baltimore).
+directTrain(philadelphia, wilmington).
+directTrain(newark,       philadelphia).
+directTrain(newyorkcity,  newark).
+directTrain(newhaven,     newyorkcity).
+directTrain(providence,   newhaven).
+directTrain(boston,       providence).
+
+% base case
+travelFromTo(From, To) :- directTrain(From, To).
+
+travelFromTo(From, To) :- directTrain(From, ToNext), travelFromTo(ToNext, To).
+
+% ------------------------------------ %
+% 4. Travel By..
+% ------------------------------------ %
+% CAR
+byCar(auckland,  hamilton).
+byCar(hamilton,  raglan).
+byCar(valmont,   saarbruecken).
+byCar(valmont,   metz).
+
+% TRAIN
+byTrain(metz,          frankfurt).
+byTrain(saarbruecken,  frankfurt).
+byTrain(metz,          paris).
+byTrain(saarbruecken,  paris).
+
+% PLANE
+byPlane(frankfurt,    bangkok).
+byPlane(frankfurt,    singapore).
+byPlane(paris,        losAngeles).
+byPlane(bangkok,      auckland).
+byPlane(singapore,    auckland).
+byPlane(losAngeles,   auckland).
+
+byWhich(From, To) :- byCar(From, To); byPlane(From, To); byTrain(From, To).
+% base case
+travel(From, To)   :- byWhich(From, To).
+
+travel(From, To)  :- byWhich(From, ToNext), travel(ToNext, To).
+
+% ------------------------------------ %
+% 5. Translation
+% ------------------------------------ %
+tran(eins,   one).
+tran(zwei,   two).
+tran(drei,   three).
+tran(vier,   four).
+tran(fuenf,  five).
+tran(sechs,  six).
+tran(sieben, seven).
+tran(acht,   eight).
+tran(neun,   nine).
+
+% base case
+listtran([], []).
+
+listtran([G|NextG], [E|NextE]) :- tran(G, E), listtran(NextG, NextE).
+
+% ------------------------------------ %
+% 6. The River Crossing Problem
+% ------------------------------------ %
+% Define "valid" moves
+change(e,w).
+change(w,e).
+
+% move(initialState, move, nextState)
+move([X,X,Goat,Cabbage],wolf,[Y,Y,Goat,Cabbage]) :- change(X, Y).
+move([X,Wolf,X,Cabbage],goat,[Y,Wolf,Y,Cabbage]) :- change(X, Y).
+move([X,Wolf,Goat,X],cabbage,[Y,Wolf,Goat,Y]) :- change(X, Y).
+move([X,Wolf,Goat,Cabbage],nothing,[Y,Wolf,Goat,Cabbage]) :- change(X, Y).
+
+% Define a safe state.
+/* The variable will be either 'e' or 'w'. */
+oneEqual(X,X,_).
+oneEqual(X,_,X).
+
+safe([Man, Wolf, Goat, Cabbage]) :- oneEqual(Man,Goat,Wolf), oneEqual(Man,Goat,Cabbage).
+
+solution([e, e, e, e], []).
+solution(State, [Move | OtherMoves]) :- 
+    move(State, Move, NextState),
+    safe(NextState), 
+    solution(NextState, OtherMoves).
